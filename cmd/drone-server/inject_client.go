@@ -19,6 +19,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
+	"github.com/drone/go-scm/scm/transport"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -178,6 +179,15 @@ func provideGitlabClient(config config.Config) *scm.Client {
 	if config.GitLab.Debug {
 		client.DumpResponse = httputil.DumpResponse
 	}
+	if config.GitLab.PrivateToken != "" {
+		client.Client = &http.Client{
+			Transport: &transport.PrivateToken{
+				Base:  defaultTransport(config.GitLab.SkipVerify),
+				Token: config.GitLab.PrivateToken,
+			},
+		}
+		return client
+	}
 	client.Client = &http.Client{
 		Transport: &oauth2.Transport{
 			Scheme: oauth2.SchemeBearer,
@@ -187,7 +197,7 @@ func provideGitlabClient(config config.Config) *scm.Client {
 				Endpoint:     strings.TrimSuffix(config.GitLab.Server, "/") + "/oauth/token",
 				Source:       oauth2.ContextTokenSource(),
 			},
-			Base:   defaultTransport(config.GitLab.SkipVerify),
+			Base: defaultTransport(config.GitLab.SkipVerify),
 		},
 	}
 	return client

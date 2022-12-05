@@ -387,6 +387,7 @@ type (
 		ClientSecret string `envconfig:"DRONE_GITLAB_CLIENT_SECRET"`
 		SkipVerify   bool   `envconfig:"DRONE_GITLAB_SKIP_VERIFY"`
 		Debug        bool   `envconfig:"DRONE_GITLAB_DEBUG"`
+		PrivateToken string `envconfig:"DRONE_GITLAB_PRIVATE_TOKEN"`
 	}
 
 	// Gogs provides the gogs client configuration.
