@@ -60,6 +60,7 @@ func provideClient(config config.Config) *scm.Client {
 	case config.Gitea.Server != "":
 		return provideGiteaClient(config)
 	case config.GitLab.ClientID != "":
+	case config.GitLab.PrivateToken != "":
 		return provideGitlabClient(config)
 	case config.Gogs.Server != "":
 		return provideGogsClient(config)
@@ -180,6 +181,9 @@ func provideGitlabClient(config config.Config) *scm.Client {
 		client.DumpResponse = httputil.DumpResponse
 	}
 	if config.GitLab.PrivateToken != "" {
+		logrus.WithField("server", config.GitLab.Server).
+			WithField("skip_verify", config.GitLab.SkipVerify).
+			Errorln("main: creating the GitLab client with private token")
 		client.Client = &http.Client{
 			Transport: &transport.PrivateToken{
 				Base:  defaultTransport(config.GitLab.SkipVerify),
