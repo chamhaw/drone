@@ -43,7 +43,7 @@ var pluginSet = wire.NewSet(
 // provideAdmissionPlugin is a Wire provider function that
 // returns an admission plugin based on the environment
 // configuration.
-func provideAdmissionPlugin(client *scm.Client, orgs core.OrganizationService, users core.UserService, config spec.Config) core.AdmissionService {
+func provideAdmissionPlugin(_ *scm.Client, orgs core.OrganizationService, users core.UserService, config spec.Config) core.AdmissionService {
 	return admission.Combine(
 		admission.Membership(orgs, config.Users.Filter),
 		admission.Open(config.Registration.Closed),
@@ -59,7 +59,7 @@ func provideAdmissionPlugin(client *scm.Client, orgs core.OrganizationService, u
 // provideConfigPlugin is a Wire provider function that returns
 // a yaml configuration plugin based on the environment
 // configuration.
-func provideConfigPlugin(client *scm.Client, contents core.FileService, conf spec.Config) core.ConfigService {
+func provideConfigPlugin(_ *scm.Client, contents core.FileService, conf spec.Config) core.ConfigService {
 	return config.Combine(
 		config.Memoize(
 			config.Global(
@@ -76,7 +76,7 @@ func provideConfigPlugin(client *scm.Client, contents core.FileService, conf spe
 // provideConvertPlugin is a Wire provider function that returns
 // a yaml conversion plugin based on the environment
 // configuration.
-func provideConvertPlugin(client *scm.Client, fileService core.FileService, conf spec.Config, templateStore core.TemplateStore) core.ConvertService {
+func provideConvertPlugin(_ *scm.Client, fileService core.FileService, conf spec.Config, templateStore core.TemplateStore) core.ConvertService {
 	return converter.Combine(
 		conf.Convert.Multi,
 		converter.Legacy(false),

@@ -16,8 +16,8 @@ package repo
 
 import (
 	"context"
-
 	"github.com/drone/drone/core"
+	"github.com/drone/drone/service/httputils"
 	"github.com/drone/go-scm/scm"
 )
 
@@ -40,18 +40,16 @@ func New(client *scm.Client, renewer core.Renewer, visibility string, trusted bo
 }
 
 func (s *service) List(ctx context.Context, user *core.User) ([]*core.Repository, error) {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return nil, err
 	}
-
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
 	repos := []*core.Repository{}
 	opts := scm.ListOptions{Size: 100}
 	for {
+		if client != nil {
+			s.client.Client = client
+		}
 		result, meta, err := s.client.Repositories.List(ctx, opts)
 		if err != nil {
 			return nil, err
@@ -72,15 +70,14 @@ func (s *service) List(ctx context.Context, user *core.User) ([]*core.Repository
 }
 
 func (s *service) Find(ctx context.Context, user *core.User, repo string) (*core.Repository, error) {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return nil, err
 	}
+	if client != nil {
+		s.client.Client = client
+	}
 
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
 	result, _, err := s.client.Repositories.Find(ctx, repo)
 	if err != nil {
 		return nil, err
@@ -89,15 +86,13 @@ func (s *service) Find(ctx context.Context, user *core.User, repo string) (*core
 }
 
 func (s *service) FindPerm(ctx context.Context, user *core.User, repo string) (*core.Perm, error) {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return nil, err
 	}
-
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
+	if client != nil {
+		s.client.Client = client
+	}
 	result, _, err := s.client.Repositories.FindPerms(ctx, repo)
 	if err != nil {
 		return nil, err

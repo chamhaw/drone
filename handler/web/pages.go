@@ -21,8 +21,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/drone/drone-ui/dist"
 	"github.com/drone/drone/core"
+	"heguan-code.urbanic.com/infrastructure/drone-ui/dist"
 )
 
 func HandleIndex(host string, session core.Session, license core.LicenseService) http.HandlerFunc {

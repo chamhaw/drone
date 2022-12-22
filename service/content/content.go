@@ -16,6 +16,7 @@ package contents
 
 import (
 	"context"
+	"github.com/drone/drone/service/httputils"
 	"strings"
 	"time"
 
@@ -63,14 +64,13 @@ func (s *service) Find(ctx context.Context, user *core.User, repo, commit, ref, 
 		strings.HasPrefix(ref, "refs/tag") {
 		commit = ref
 	}
-	err := s.renewer.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renewer)
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
+	if client != nil {
+		s.client.Client = client
+	}
 	content, err := s.findRetry(ctx, repo, path, commit)
 	if err != nil {
 		return nil, err

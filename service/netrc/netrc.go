@@ -16,6 +16,7 @@ package netrc
 
 import (
 	"context"
+	"github.com/drone/drone/service/httputils"
 
 	"github.com/drone/drone/core"
 	"github.com/drone/go-scm/scm"
@@ -71,9 +72,12 @@ func (s *Service) Create(ctx context.Context, user *core.User, repo *core.Reposi
 
 	// force refresh the authorization token to prevent
 	// it from expiring during pipeline execution.
-	err = s.renewer.Renew(ctx, user, true)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renewer)
 	if err != nil {
 		return nil, err
+	}
+	if client != nil {
+		s.client.Client = client
 	}
 
 	switch s.client.Driver {

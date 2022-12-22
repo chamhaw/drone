@@ -16,9 +16,8 @@ package hook
 
 import (
 	"context"
-	"time"
-
 	"github.com/drone/drone/core"
+	"github.com/drone/drone/service/httputils"
 	"github.com/drone/go-scm/scm"
 )
 
@@ -34,15 +33,13 @@ type service struct {
 }
 
 func (s *service) Create(ctx context.Context, user *core.User, repo *core.Repository) error {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return err
 	}
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-		Expires: time.Unix(user.Expiry, 0),
-	})
+	if client != nil {
+		s.client.Client = client
+	}
 	hook := &scm.HookInput{
 		Name:   "drone",
 		Target: s.addr + "/hook",
@@ -59,14 +56,12 @@ func (s *service) Create(ctx context.Context, user *core.User, repo *core.Reposi
 }
 
 func (s *service) Delete(ctx context.Context, user *core.User, repo *core.Repository) error {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return err
 	}
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-		Expires: time.Unix(user.Expiry, 0),
-	})
+	if client != nil {
+		s.client.Client = client
+	}
 	return deleteHook(ctx, s.client, repo.Slug, s.addr)
 }

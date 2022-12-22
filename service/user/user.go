@@ -16,6 +16,7 @@ package user
 
 import (
 	"context"
+	"github.com/drone/drone/service/httputils"
 
 	"github.com/drone/drone/core"
 	"github.com/drone/go-scm/scm"
@@ -45,15 +46,13 @@ func (s *service) Find(ctx context.Context, access, refresh string) (*core.User,
 }
 
 func (s *service) FindLogin(ctx context.Context, user *core.User, login string) (*core.User, error) {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return nil, err
 	}
-
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
+	if client != nil {
+		s.client.Client = client
+	}
 	src, _, err := s.client.Users.FindLogin(ctx, login)
 	if err != nil {
 		return nil, err

@@ -29,22 +29,23 @@ var (
 type (
 	// User represents a user of the system.
 	User struct {
-		ID        int64  `json:"id"`
-		Login     string `json:"login"`
-		Email     string `json:"email"`
-		Machine   bool   `json:"machine"`
-		Admin     bool   `json:"admin"`
-		Active    bool   `json:"active"`
-		Avatar    string `json:"avatar"`
-		Syncing   bool   `json:"syncing"`
-		Synced    int64  `json:"synced"`
-		Created   int64  `json:"created"`
-		Updated   int64  `json:"updated"`
-		LastLogin int64  `json:"last_login"`
-		Token     string `json:"-"`
-		Refresh   string `json:"-"`
-		Expiry    int64  `json:"-"`
-		Hash      string `json:"-"`
+		ID           int64  `json:"id"`
+		Login        string `json:"login"`
+		Email        string `json:"email"`
+		Machine      bool   `json:"machine"`
+		Admin        bool   `json:"admin"`
+		Active       bool   `json:"active"`
+		Avatar       string `json:"avatar"`
+		Syncing      bool   `json:"syncing"`
+		Synced       int64  `json:"synced"`
+		Created      int64  `json:"created"`
+		Updated      int64  `json:"updated"`
+		LastLogin    int64  `json:"last_login"`
+		Token        string `json:"-"`
+		Refresh      string `json:"-"`
+		Expiry       int64  `json:"-"`
+		Hash         string `json:"-"`
+		PrivateToken string `json:"-"`
 	}
 
 	// UserParams defines user query parameters.

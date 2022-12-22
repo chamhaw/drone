@@ -16,6 +16,7 @@ package commit
 
 import (
 	"context"
+	"github.com/drone/drone/service/httputils"
 
 	"github.com/drone/drone/core"
 	"github.com/drone/go-scm/scm"
@@ -35,14 +36,13 @@ type service struct {
 }
 
 func (s *service) Find(ctx context.Context, user *core.User, repo, sha string) (*core.Commit, error) {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
+	if client != nil {
+		s.client.Client = client
+	}
 	commit, _, err := s.client.Git.FindCommit(ctx, repo, sha)
 	if err != nil {
 		return nil, err
@@ -69,15 +69,13 @@ func (s *service) Find(ctx context.Context, user *core.User, repo, sha string) (
 }
 
 func (s *service) FindRef(ctx context.Context, user *core.User, repo, ref string) (*core.Commit, error) {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
-
+	if client != nil {
+		s.client.Client = client
+	}
 	switch s.client.Driver {
 	case scm.DriverBitbucket,
 		scm.DriverStash:
@@ -116,14 +114,13 @@ func (s *service) FindRef(ctx context.Context, user *core.User, repo, ref string
 }
 
 func (s *service) ListChanges(ctx context.Context, user *core.User, repo, sha, ref string) ([]*core.Change, error) {
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
+	if client != nil {
+		s.client.Client = client
+	}
 	out, _, err := s.client.Git.ListChanges(ctx, repo, sha, scm.ListOptions{Size: 100})
 	if err != nil {
 		return nil, err

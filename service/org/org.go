@@ -16,9 +16,8 @@ package orgs
 
 import (
 	"context"
-	"time"
-
 	"github.com/drone/drone/core"
+	"github.com/drone/drone/service/httputils"
 	"github.com/drone/go-scm/scm"
 )
 
@@ -36,18 +35,13 @@ type service struct {
 }
 
 func (s *service) List(ctx context.Context, user *core.User) ([]*core.Organization, error) {
-	err := s.renewer.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renewer)
 	if err != nil {
 		return nil, err
 	}
-	token := &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
+	if client != nil {
+		s.client.Client = client
 	}
-	if user.Expiry != 0 {
-		token.Expires = time.Unix(user.Expiry, 0)
-	}
-	ctx = context.WithValue(ctx, scm.TokenKey{}, token)
 	out, _, err := s.client.Organizations.List(ctx, scm.ListOptions{Size: 100})
 	if err != nil {
 		return nil, err
@@ -63,18 +57,14 @@ func (s *service) List(ctx context.Context, user *core.User) ([]*core.Organizati
 }
 
 func (s *service) Membership(ctx context.Context, user *core.User, name string) (bool, bool, error) {
-	err := s.renewer.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renewer)
 	if err != nil {
 		return false, false, err
 	}
-	token := &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
+	if client != nil {
+		s.client.Client = client
 	}
-	if user.Expiry != 0 {
-		token.Expires = time.Unix(user.Expiry, 0)
-	}
-	ctx = context.WithValue(ctx, scm.TokenKey{}, token)
+
 	out, _, err := s.client.Organizations.FindMembership(ctx, name, user.Login)
 	if err != nil {
 		return false, false, err

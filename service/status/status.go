@@ -17,6 +17,7 @@ package status
 import (
 	"context"
 	"fmt"
+	"github.com/drone/drone/service/httputils"
 
 	"github.com/drone/drone/core"
 	"github.com/drone/go-scm/scm"
@@ -54,16 +55,14 @@ func (s *service) Send(ctx context.Context, user *core.User, req *core.StatusInp
 		return nil
 	}
 
-	err := s.renew.Renew(ctx, user, false)
+	ctx, client, err := httputils.PrepareHttpClient(ctx, user, s.renew)
 	if err != nil {
 		return err
 	}
-
-	ctx = context.WithValue(ctx, scm.TokenKey{}, &scm.Token{
-		Token:   user.Token,
-		Refresh: user.Refresh,
-	})
-
+	if client != nil {
+		s.client.Client = client
+	}
+	
 	// HACK(bradrydzewski) provides support for the github deployment API
 	if req.Build.DeployID != 0 && s.client.Driver == scm.DriverGithub {
 		// TODO(bradrydzewski) only update the deployment status when the

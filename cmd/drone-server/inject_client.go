@@ -19,7 +19,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"github.com/drone/go-scm/scm/transport"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -60,7 +59,6 @@ func provideClient(config config.Config) *scm.Client {
 	case config.Gitea.Server != "":
 		return provideGiteaClient(config)
 	case config.GitLab.ClientID != "":
-	case config.GitLab.PrivateToken != "":
 		return provideGitlabClient(config)
 	case config.Gogs.Server != "":
 		return provideGogsClient(config)
@@ -180,18 +178,7 @@ func provideGitlabClient(config config.Config) *scm.Client {
 	if config.GitLab.Debug {
 		client.DumpResponse = httputil.DumpResponse
 	}
-	if config.GitLab.PrivateToken != "" {
-		logrus.WithField("server", config.GitLab.Server).
-			WithField("skip_verify", config.GitLab.SkipVerify).
-			Errorln("main: creating the GitLab client with private token")
-		client.Client = &http.Client{
-			Transport: &transport.PrivateToken{
-				Base:  defaultTransport(config.GitLab.SkipVerify),
-				Token: config.GitLab.PrivateToken,
-			},
-		}
-		return client
-	}
+
 	client.Client = &http.Client{
 		Transport: &oauth2.Transport{
 			Scheme: oauth2.SchemeBearer,
